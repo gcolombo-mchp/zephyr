@@ -1,0 +1,28 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+title: Microchip PIC32CK SG/GC SOC family clock
+
+description: |
+  Microchip PIC32CK SG/GC SOC family clock (MCLK, GCLK)
+
+include:
+  - name: base.yaml
+
+compatible: "microchip,pic32ck-sg-gc-clock"
+
+properties:
+  reg:
+    required: true
+
+  "#clock-cells":
+    const: 1
+    type: int
+    description: |
+      The subsystem cell is to identify a clock controller sub-system.
+
+  on-timeout-ms:
+    type: int
+    default: 65
+    description: |
+      Timeout in milliseconds for clock to be on.

@@ -1,0 +1,8 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+description: Microchip PIC32CK MDIO controller
+
+compatible: "microchip,pic32ck-mdio"
+
+include: [mdio-controller.yaml, pinctrl-device.yaml]

@@ -1,0 +1,28 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+config UDC_PIC32CK_FS
+	bool "Microchip PIC32CK Full-Speed USB device controller driver"
+	default y
+	depends on DT_HAS_MICROCHIP_PIC32CK_USB_FS_ENABLED
+	select CLOCK_CONTROL
+	select EVENTS
+	help
+	  USB device controller driver for Microchip PIC32CK Full-Speed USB.
+
+if UDC_PIC32CK_FS
+
+config UDC_PIC32CK_FS_STACK_SIZE
+	int "PIC32CK FS USB controller driver internal thread stack size"
+	default 1024
+	help
+	  PIC32CK FS USB controller driver internal thread stack size.
+
+config UDC_PIC32CK_FS_THREAD_PRIORITY
+	int "PIC32CK FS USB controller driver internal thread priority"
+	default 8
+	help
+	  PIC32CK FS USB controller driver internal thread priority.
+	  A cooperative priority is recommended.
+
+endif # UDC_PIC32CK_FS

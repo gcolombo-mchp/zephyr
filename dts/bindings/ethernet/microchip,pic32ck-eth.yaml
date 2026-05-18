@@ -1,0 +1,25 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+description: Microchip PIC32CK Ethernet MAC (Cadence GEM)
+
+compatible: "microchip,pic32ck-eth"
+
+include: [ethernet-controller.yaml, pinctrl-device.yaml]
+
+properties:
+  interrupts:
+    required: true
+
+  num-queues:
+    type: int
+    required: true
+    description: Number of hardware queues (1-6)
+
+  ref-clk-source:
+    type: string
+    default: "internal"
+    enum:
+      - "internal"
+      - "external"
+    description: Reference clock source for RMII

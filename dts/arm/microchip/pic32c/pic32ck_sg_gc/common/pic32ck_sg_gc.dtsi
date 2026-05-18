@@ -6,6 +6,7 @@
 
 #include <arm/armv8-m.dtsi>
 #include <zephyr/dt-bindings/gpio/gpio.h>
+#include <zephyr/dt-bindings/clock/mchp_pic32ck_sg_gc_clock.h>
 
 / {
 	cpus {
@@ -27,6 +28,95 @@
 	};
 
 	soc {
+		clock: clock@44012000 {
+			compatible = "microchip,pic32ck-sg-gc-clock";
+			reg = <0x44012000 0x60>, <0x44010000 0x140>;
+			reg-names = "mclk", "gclk";
+			#clock-cells = <1>;
+
+			mclkperiph: mclkperiph {
+				compatible = "microchip,pic32ck-sg-gc-mclkperiph";
+				#clock-cells = <1>;
+			};
+
+			gclkperiph: gclkperiph {
+				compatible = "microchip,pic32ck-sg-gc-gclkperiph";
+				#clock-cells = <1>;
+			};
+		};
+
+		eic: interrupt-controller@4401a000 {
+			compatible = "microchip,eic-g1-intc";
+			reg = <0x4401a000 0x38>;
+			interrupts = <13 0>, <14 0>, <15 0>, <16 0>,
+				     <17 0>, <18 0>, <19 0>, <20 0>,
+				     <21 0>, <22 0>, <23 0>, <24 0>,
+				     <25 0>, <26 0>, <27 0>, <28 0>;
+			interrupt-names = "extint-0", "extint-1", "extint-2", "extint-3",
+					  "extint-4", "extint-5", "extint-6", "extint-7",
+					  "extint-8", "extint-9", "extint-10", "extint-11",
+					  "extint-12", "extint-13", "extint-14", "extint-15";
+			clocks = <&mclkperiph CLOCK_MCHP_MCLKPERIPH_ID_EIC>,
+				 <&gclkperiph CLOCK_MCHP_GCLKPERIPH_ID_EIC>;
+			clock-names = "mclk", "gclk";
+		};
+
+		sercom5: sercom@45002000 {
+			compatible = "microchip,sercom-g1";
+			reg = <0x45002000 0x40>;
+			interrupts = <102 0>, <103 0>, <104 0>, <105 0>, <106 0>, <107 0>;
+			interrupt-names = "source-56", "source-0", "source-1",
+					  "source-2", "source-3", "source-4";
+			clocks = <&mclkperiph CLOCK_MCHP_MCLKPERIPH_ID_SERCOM5>,
+				 <&gclkperiph CLOCK_MCHP_GCLKPERIPH_ID_SERCOM5_CORE>;
+			clock-names = "mclk", "gclk";
+			status = "disabled";
+		};
+
+		usb1: usb@4502a000 {
+			compatible = "microchip,pic32ck-usb-fs";
+			reg = <0x4502a000 0x1000>;
+			interrupts = <150 0>, <151 0>, <152 0>, <153 0>;
+			clocks = <&mclkperiph CLOCK_MCHP_MCLKPERIPH_ID_USB_AHB>,
+				 <&mclkperiph CLOCK_MCHP_MCLKPERIPH_ID_USB_APB>,
+				 <&gclkperiph CLOCK_MCHP_GCLKPERIPH_ID_USB>;
+			clock-names = "mclk_ahb", "mclk_apb", "gclk";
+			num-bidir-endpoints = <8>;
+			status = "disabled";
+		};
+
+		ethernet@45022000 {
+			compatible = "microchip,pic32ck-ethernet-controller";
+			reg = <0x45022000 0x2000>;
+
+			eth: ethernet {
+				compatible = "microchip,pic32ck-eth";
+				interrupts = <145 0>;
+				interrupt-names = "gmac";
+				num-queues = <1>;
+				phy-connection-type = "rmii";
+				ref-clk-source = "internal";
+				status = "disabled";
+			};
+
+			mdio: mdio {
+				compatible = "microchip,pic32ck-mdio";
+				#address-cells = <1>;
+				#size-cells = <0>;
+				status = "disabled";
+			};
+		};
+
+		trng: random@45024000 {
+			compatible = "microchip,trng-g1-entropy";
+			reg = <0x45024000 0x24>;
+			interrupts = <147 0>;
+			interrupt-names = "datardy";
+			clocks = <&mclkperiph CLOCK_MCHP_MCLKPERIPH_ID_TRNG>;
+			clock-names = "mclk";
+			status = "disabled";
+		};
+
 		nvmctrl: flash-controller@44004000 {
 			reg = <0x44004000 0x7c>;
 			#address-cells = <1>;
@@ -52,6 +142,7 @@
 
 		pinctrl: pinctrl@44800000 {
 			compatible = "microchip,port-g1-pinctrl";
+			reg = <0x44800000 0x200>;
 			#address-cells = <1>;
 			#size-cells = <1>;
 			ranges = <0x44800000 0x44800000 0x200>;

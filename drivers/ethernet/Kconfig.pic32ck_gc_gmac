@@ -1,0 +1,32 @@
+# Microchip PIC32CK GC Ethernet (GMAC) driver configuration options
+
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig ETH_PIC32CK_GC_GMAC
+	bool "Microchip PIC32CK GC Ethernet driver"
+	default y
+	depends on NET_BUF_FIXED_DATA_SIZE
+	depends on DT_HAS_MICROCHIP_PIC32CK_ETH_ENABLED
+	select NOCACHE_MEMORY if ARCH_HAS_NOCACHE_MEMORY_SUPPORT
+	select PINCTRL
+	help
+	  Enable Microchip PIC32CK GC Ethernet (GMAC) driver.
+
+if ETH_PIC32CK_GC_GMAC
+
+config ETH_PIC32CK_GC_GMAC_BUF_RX_COUNT
+	int "Network RX buffers preallocated by the ETH driver"
+	default 12
+	help
+	  Number of network buffers that will be permanently allocated by the
+	  Ethernet driver. These buffers are used in receive path.
+
+config ETH_PIC32CK_GC_GMAC_QUEUES
+	int "Number of priority queues"
+	default 1
+	range 1 1
+	help
+	  Number of hardware priority queues (PIC32CK GC supports 1).
+
+endif # ETH_PIC32CK_GC_GMAC

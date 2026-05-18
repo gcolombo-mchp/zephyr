@@ -6,6 +6,7 @@
 
 /dts-v1/;
 #include <microchip/pic32c/pic32ck_sg_gc/pic32ck_gc01/pic32ck2051gc01144.dtsi>
+#include "pic32ck_gc01_cult-pinctrl.dtsi"
 #include <zephyr/dt-bindings/input/input-event-codes.h>
 
 / {
@@ -13,6 +14,9 @@
 	compatible = "microchip,pic32ck_gc01_cult";
 
 	chosen {
+		zephyr,console = &sercom5;
+		zephyr,shell-uart = &sercom5;
+		zephyr,entropy = &trng;
 		zephyr,sram = &sram0;
 		zephyr,flash = &flash1;
 		zephyr,code-partition = &code_partition;
@@ -23,6 +27,7 @@
 		led1 = &led1;
 		sw0 = &button0;
 		sw1 = &button1;
+		vbus1 = &vbus1;
 	};
 
 	leds {
@@ -47,6 +52,17 @@
 			label = "SW0";
 			zephyr,code = <INPUT_KEY_0>;
 		};
+		vbus1: vbus_1 {
+			gpios = <&portc 23 GPIO_ACTIVE_HIGH>;
+			label = "VBUS";
+			zephyr,code = <INPUT_KEY_2>;
+		};
+
+	};
+
+	buttons_poll {
+		compatible = "gpio-keys";
+		polling-mode;
 
 		button1: button_1 {
 			gpios = <&portd 2 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
@@ -91,13 +107,58 @@
 };
 
 &cpu0 {
-	clock-frequency = <48000000>;
+	clock-frequency = <120000000>;
+};
+
+&porta {
+	status = "okay";
 };
 
 &portb {
 	status = "okay";
 };
 
+&portc {
+	status = "okay";
+};
+
 &portd {
+	status = "okay";
+};
+
+&sercom5 {
+	compatible = "microchip,sercom-g1-uart";
+	current-speed = <115200>;
+	rxpo = <1>;
+	txpo = <0>;
+	pinctrl-0 = <&sercom5_uart_default>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+zephyr_udc0: &usb1 {
+	status = "okay";
+	pinctrl-0 = <&usb_dc_default>;
+	pinctrl-names = "default";
+};
+
+&eth {
+	status = "okay";
+	phy-handle = <&phy0>;
+	pinctrl-0 = <&eth_rmii_default>;
+	pinctrl-names = "default";
+};
+
+&mdio {
+	status = "okay";
+	pinctrl-0 = <&eth_rmii_default>;
+	pinctrl-names = "default";
+	phy0: ethernet-phy@0 {
+		compatible = "ethernet-phy";
+		reg = <0>;
+	};
+};
+
+&trng {
 	status = "okay";
 };
