@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+if TOOLCHAIN_XC32
+
+config PICOLIBC_SUPPORTED
+	default n
+
+config NEWLIB_LIBC_SUPPORTED
+	default n
+
+config FULL_LIBC_SUPPORTED
+	default y
+
+# XC32 crt0 handles all startup (cache init, .data copy, BSS clear)
+config SKIP_BSS_CLEAR
+	default y
+
+endif # TOOLCHAIN_XC32

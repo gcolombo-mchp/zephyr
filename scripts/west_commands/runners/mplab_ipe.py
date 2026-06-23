@@ -21,6 +21,7 @@ class MPLABIPEBinaryRunner(ZephyrBinaryRunner):
         dev_id: str | None = None,
         erase: bool = False,
         verify: bool = False,
+        ipecmd_path: str | None = None,
     ):
         super().__init__(cfg)
         self.tool = tool
@@ -28,6 +29,7 @@ class MPLABIPEBinaryRunner(ZephyrBinaryRunner):
         self.dev_id = dev_id
         self.erase = erase
         self.verify = verify
+        self.ipecmd_path = ipecmd_path
 
     @classmethod
     def name(cls):
@@ -50,6 +52,10 @@ class MPLABIPEBinaryRunner(ZephyrBinaryRunner):
         parser.add_argument(
             "--verify", action=argparse.BooleanOptionalAction, help="Verify after programming"
         )
+        parser.add_argument(
+            "--ipecmd-path",
+            help="Full path to ipecmd executable (overrides PATH search)"
+        )
 
     @classmethod
     def do_create(cls, cfg: RunnerConfig, args):
@@ -60,6 +66,7 @@ class MPLABIPEBinaryRunner(ZephyrBinaryRunner):
             dev_id=args.dev_id,
             erase=args.erase,
             verify=args.verify,
+            ipecmd_path=getattr(args, 'ipecmd_path', None),
         )
 
     def do_run(self, command: str, **kwargs):
@@ -72,7 +79,10 @@ class MPLABIPEBinaryRunner(ZephyrBinaryRunner):
         self.ensure_output('hex')
         hex_file = self.cfg.hex_file
 
-        exe = self.require("ipecmd.exe" if os.name == "nt" else "ipecmd.sh")
+        if self.ipecmd_path:
+            exe = self.ipecmd_path
+        else:
+            exe = self.require("ipecmd.exe" if os.name == "nt" else "ipecmd.sh")
 
         cmd = [
             exe,

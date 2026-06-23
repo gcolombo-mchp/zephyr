@@ -1,0 +1,11 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+family:
+- name: microchip_pic32mz_ef
+  series:
+  - name: pic32mz_efh
+    socs:
+    - name: pic32mz2048efh144
+    - name: pic32mz2048efh100
+    - name: pic32mz2048efh064

@@ -1,0 +1,399 @@
+/*
+ * Copyright (c) 2026 Microchip Technology Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Base device tree include for PIC32MZ EF family.
+ * Addresses are virtual (KSEG1 uncached) as used by the CPU.
+ *
+ * Reference: DS60001320H - PIC32MZ EF Family Data Sheet, Table 4-1
+ */
+
+#include <common/skeleton.dtsi>
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu0: cpu@0 {
+			device_type = "cpu";
+			compatible = "mti,mips-m14kc";
+			reg = <0>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			cpu_intc: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "mti,cpu-intc";
+				interrupt-controller;
+			};
+		};
+	};
+
+	/* Program Flash: KSEG0 virtual 0x9D000000 (physical 0x1D000000, cached) */
+	flash0: flash@9d000000 {
+		compatible = "soc-nv-flash";
+		write-block-size = <4>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+	};
+
+	/* Data RAM: physical 0x00000000, virtual KSEG0 0x80000000 */
+	sram0: memory@80000000 {
+		compatible = "mmio-sram";
+	};
+
+	/* Boot Flash: physical 0x1FC00000, virtual KSEG1 0xBFC00000 */
+	boot_flash: flash@bfc00000 {
+		compatible = "soc-nv-flash";
+		reg = <0xbfc00000 0x14000>;
+		write-block-size = <4>;
+	};
+
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "simple-bus";
+		ranges;
+
+		/*
+		 * Clock subsystem
+		 * Oscillator/PLL: 0xBF801200, PBxDIV: 0xBF800100
+		 */
+		clock: clock@bf801200 {
+			compatible = "microchip,pic32mz-clock";
+			reg = <0xbf801200 0x200>,
+			      <0xbf801300 0x100>;
+			reg-names = "osc", "pb";
+			#clock-cells = <0>;
+			status = "okay";
+
+			frc: frc {
+				compatible = "microchip,pic32mz-frc";
+				clock-frequency = <8000000>;
+				#clock-cells = <0>;
+			};
+
+			posc: posc {
+				compatible = "microchip,pic32mz-posc";
+				clock-frequency = <24000000>;
+				posc-mode = "ec";
+				#clock-cells = <0>;
+			};
+
+			spll: spll {
+				compatible = "microchip,pic32mz-spll";
+				clocks = <&posc>;
+				pll-input-div = <3>;
+				pll-mult = <50>;
+				pll-output-div = <2>;
+				#clock-cells = <0>;
+			};
+
+			pbclk: pbclk {
+				compatible = "microchip,pic32mz-pbclk";
+				clocks = <&spll>;
+				#clock-cells = <1>;
+				pbclk2-div = <2>;
+				pbclk3-div = <2>;
+				pbclk4-div = <1>;
+				pbclk5-div = <2>;
+			};
+		};
+
+		/*
+		 * Operating Performance Points for runtime clock switching.
+		 * Board overlay can override/extend these.
+		 */
+		opp_table: opp-table {
+			compatible = "microchip,pic32mz-opp-table";
+
+			opp_200mhz: opp-200mhz {
+				opp-hz = <200000000>;
+				clock-source = "spll";
+				pbclk2-div = <2>;
+				pbclk3-div = <2>;
+				pbclk4-div = <1>;
+				pbclk5-div = <2>;
+				pbclk7-div = <1>;
+				pbclk8-div = <2>;
+			};
+
+			opp_100mhz: opp-100mhz {
+				opp-hz = <100000000>;
+				clock-source = "spll";
+				pbclk2-div = <4>;
+				pbclk3-div = <4>;
+				pbclk4-div = <2>;
+				pbclk5-div = <4>;
+				pbclk7-div = <1>;
+				pbclk8-div = <4>;
+			};
+
+			opp_8mhz: opp-8mhz {
+				opp-hz = <8000000>;
+				clock-source = "frc";
+				pbclk2-div = <1>;
+				pbclk3-div = <1>;
+				pbclk4-div = <1>;
+				pbclk5-div = <1>;
+				pbclk7-div = <1>;
+				pbclk8-div = <1>;
+			};
+		};
+
+		/*
+		 * Enhanced Vectored Interrupt Controller (EVIC)
+		 * Base: 0xBF810000, 213 vectors, 7 priority levels
+		 */
+		evic: interrupt-controller@bf810000 {
+			compatible = "microchip,pic32mz-evic";
+			reg = <0xbf810000 0x1000>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			interrupt-parent = <&cpu_intc>;
+			interrupts = <2>;
+		};
+
+		/*
+		 * GPIO Ports: Base 0xBF860000
+		 * Each port occupies 0x100 bytes (with CLR/SET/INV registers)
+		 */
+		pinctrl: pinctrl@bf860000 {
+			compatible = "microchip,pic32mz-pinctrl";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			reg = <0xbf860000 0xb00>;
+			ranges = <0xbf860000 0xbf860000 0xb00>;
+
+			porta: gpio@bf860000 {
+				compatible = "microchip,pic32mz-gpio";
+				reg = <0xbf860000 0x100>;
+				gpio-controller;
+				#gpio-cells = <2>;
+				interrupt-parent = <&evic>;
+				clocks = <&pbclk 4>;
+				microchip,port-index = <0>;
+				status = "disabled";
+			};
+
+			portb: gpio@bf860100 {
+				compatible = "microchip,pic32mz-gpio";
+				reg = <0xbf860100 0x100>;
+				gpio-controller;
+				#gpio-cells = <2>;
+				interrupt-parent = <&evic>;
+				clocks = <&pbclk 4>;
+				microchip,port-index = <1>;
+				status = "disabled";
+			};
+
+			portc: gpio@bf860200 {
+				compatible = "microchip,pic32mz-gpio";
+				reg = <0xbf860200 0x100>;
+				gpio-controller;
+				#gpio-cells = <2>;
+				interrupt-parent = <&evic>;
+				clocks = <&pbclk 4>;
+				microchip,port-index = <2>;
+				status = "disabled";
+			};
+
+			portd: gpio@bf860300 {
+				compatible = "microchip,pic32mz-gpio";
+				reg = <0xbf860300 0x100>;
+				gpio-controller;
+				#gpio-cells = <2>;
+				interrupt-parent = <&evic>;
+				clocks = <&pbclk 4>;
+				microchip,port-index = <3>;
+				status = "disabled";
+			};
+
+			porte: gpio@bf860400 {
+				compatible = "microchip,pic32mz-gpio";
+				reg = <0xbf860400 0x100>;
+				gpio-controller;
+				#gpio-cells = <2>;
+				interrupt-parent = <&evic>;
+				clocks = <&pbclk 4>;
+				microchip,port-index = <4>;
+				status = "disabled";
+			};
+
+			portf: gpio@bf860500 {
+				compatible = "microchip,pic32mz-gpio";
+				reg = <0xbf860500 0x100>;
+				gpio-controller;
+				#gpio-cells = <2>;
+				interrupt-parent = <&evic>;
+				clocks = <&pbclk 4>;
+				microchip,port-index = <5>;
+				status = "disabled";
+			};
+
+			portg: gpio@bf860600 {
+				compatible = "microchip,pic32mz-gpio";
+				reg = <0xbf860600 0x100>;
+				gpio-controller;
+				#gpio-cells = <2>;
+				interrupt-parent = <&evic>;
+				clocks = <&pbclk 4>;
+				microchip,port-index = <6>;
+				status = "disabled";
+			};
+		};
+
+		/*
+		 * UART1-6: Base 0xBF822000
+		 * Spacing: 0x200 per UART instance
+		 */
+		uart1: serial@bf822000 {
+			compatible = "microchip,pic32mz-uart";
+			reg = <0xbf822000 0x50>;
+			interrupt-parent = <&evic>;
+			interrupts = <112 4>, <113 4>, <114 4>;
+			interrupt-names = "fault", "rx", "tx";
+			clocks = <&pbclk 2>;
+			status = "disabled";
+		};
+
+		uart2: serial@bf822200 {
+			compatible = "microchip,pic32mz-uart";
+			reg = <0xbf822200 0x50>;
+			interrupt-parent = <&evic>;
+			interrupts = <145 4>, <146 4>, <147 4>;
+			interrupt-names = "fault", "rx", "tx";
+			clocks = <&pbclk 2>;
+			status = "disabled";
+		};
+
+		uart3: serial@bf822400 {
+			compatible = "microchip,pic32mz-uart";
+			reg = <0xbf822400 0x50>;
+			interrupt-parent = <&evic>;
+			interrupts = <157 4>, <158 4>, <159 4>;
+			interrupt-names = "fault", "rx", "tx";
+			clocks = <&pbclk 2>;
+			status = "disabled";
+		};
+
+		uart4: serial@bf822600 {
+			compatible = "microchip,pic32mz-uart";
+			reg = <0xbf822600 0x50>;
+			interrupt-parent = <&evic>;
+			interrupts = <170 4>, <171 4>, <172 4>;
+			interrupt-names = "fault", "rx", "tx";
+			clocks = <&pbclk 2>;
+			status = "disabled";
+		};
+
+		uart5: serial@bf822800 {
+			compatible = "microchip,pic32mz-uart";
+			reg = <0xbf822800 0x50>;
+			interrupt-parent = <&evic>;
+			interrupts = <179 4>, <180 4>, <181 4>;
+			interrupt-names = "fault", "rx", "tx";
+			clocks = <&pbclk 2>;
+			status = "disabled";
+		};
+
+		uart6: serial@bf822a00 {
+			compatible = "microchip,pic32mz-uart";
+			reg = <0xbf822a00 0x50>;
+			interrupt-parent = <&evic>;
+			interrupts = <188 4>, <189 4>, <190 4>;
+			interrupt-names = "fault", "rx", "tx";
+			clocks = <&pbclk 2>;
+			status = "disabled";
+		};
+
+		/*
+		 * SPI1-6: Base 0xBF821000
+		 * Spacing: 0x200 per SPI instance
+		 */
+		spi1: spi@bf821000 {
+			compatible = "microchip,pic32mz-spi";
+			reg = <0xbf821000 0x50>;
+			interrupt-parent = <&evic>;
+			interrupts = <109 4>, <110 4>, <111 4>;
+			interrupt-names = "fault", "rx", "tx";
+			clocks = <&pbclk 2>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "disabled";
+		};
+
+		spi2: spi@bf821200 {
+			compatible = "microchip,pic32mz-spi";
+			reg = <0xbf821200 0x50>;
+			interrupt-parent = <&evic>;
+			interrupts = <142 4>, <143 4>, <144 4>;
+			interrupt-names = "fault", "rx", "tx";
+			clocks = <&pbclk 2>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "disabled";
+		};
+
+		/*
+		 * I2C1-5: Base 0xBF820000
+		 * Spacing: 0x200 per I2C instance
+		 */
+		i2c1: i2c@bf820000 {
+			compatible = "microchip,pic32mz-i2c";
+			reg = <0xbf820000 0x50>;
+			interrupt-parent = <&evic>;
+			interrupts = <115 4>, <116 4>, <117 4>;
+			interrupt-names = "bus", "slave", "master";
+			clocks = <&pbclk 2>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "disabled";
+		};
+
+		i2c2: i2c@bf820200 {
+			compatible = "microchip,pic32mz-i2c";
+			reg = <0xbf820200 0x50>;
+			interrupt-parent = <&evic>;
+			interrupts = <148 4>, <149 4>, <150 4>;
+			interrupt-names = "bus", "slave", "master";
+			clocks = <&pbclk 2>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "disabled";
+		};
+
+		/*
+		 * DMA Controller: Base 0xBF811000
+		 * 8 channels
+		 */
+		dma: dma@bf811000 {
+			compatible = "microchip,pic32mz-dma";
+			reg = <0xbf811000 0x1000>;
+			interrupt-parent = <&evic>;
+			interrupts = <134 4>, <135 4>, <136 4>, <137 4>,
+				     <138 4>, <139 4>, <140 4>, <141 4>;
+			#dma-cells = <1>;
+			dma-channels = <8>;
+			status = "disabled";
+		};
+
+		/*
+		 * Timer1: Base 0xBF840000
+		 */
+		timer1: timer@bf840000 {
+			compatible = "microchip,pic32mz-timer";
+			reg = <0xbf840000 0x20>;
+			interrupt-parent = <&evic>;
+			interrupts = <4 4>;
+			clocks = <&pbclk 3>;
+			status = "disabled";
+		};
+	};
+};

@@ -1,0 +1,8 @@
+identifier: pic32mz_ef_sk
+name: PIC32MZ EF Starter Kit
+type: mcu
+arch: mips
+toolchain:
+  - zephyr
+ram: 512
+flash: 2048

@@ -1,0 +1,9 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+board:
+  name: pic32mz_ef_sk
+  full_name: PIC32MZ Embedded Connectivity with FPU (EF) Starter Kit
+  vendor: microchip
+  socs:
+    - name: pic32mz2048efh144

@@ -1,0 +1,5 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+config BOARD_PIC32MZ_EF_SK
+	select SOC_PIC32MZ2048EFH144

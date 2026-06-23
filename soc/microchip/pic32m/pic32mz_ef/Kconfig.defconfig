@@ -1,0 +1,126 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+if SOC_FAMILY_MICROCHIP_PIC32MZ_EF
+
+config NUM_IRQS
+	default 213
+
+config SYS_CLOCK_HW_CYCLES_PER_SEC
+	default 100000000
+
+config DYNAMIC_INTERRUPTS
+	default y
+
+config PINCTRL
+	default y
+
+config FLASH_BASE_ADDRESS
+	default 0x9D000000
+
+config FLASH_SIZE
+	default 2048
+
+config FLASH_LOAD_OFFSET
+	default 0
+
+config MIPS_CP0_TIMER
+	default y
+
+# --------------------------------------------------------------------------
+# PIC32MZ Configuration Bits (DEVCFG)
+#
+# These words are programmed into Boot Flash at fixed addresses and are read
+# by the hardware at reset BEFORE code execution begins.
+# Default values here represent Power-On Reset state (all unprogrammed = 0xFFFFFFFF
+# except where the datasheet specifies otherwise).
+#
+# The board defconfig should override these for the actual hardware configuration
+# (crystal frequency, PLL settings, etc.).
+# An application can further override via prj.conf or board overlay.
+#
+# Reference: DS60001320H Section 34.0 "Special Features"
+# --------------------------------------------------------------------------
+
+config PIC32MZ_DEVCFG
+	bool "PIC32MZ device configuration bits"
+	default y
+	help
+	  Include the PIC32MZ device configuration words (DEVCFG0-3) in the
+	  output binary. These are placed at physical address 0x1FC0FFC0
+	  (virtual 0xBFC0FFC0) in boot flash configuration space.
+
+if PIC32MZ_DEVCFG
+
+# --- DEVCFG3 (0xBFC0FFC0) ---
+
+config PIC32MZ_DEVCFG3
+	hex "DEVCFG3 value"
+	default 0xFFFFFFFF
+	help
+	  Device Configuration Word 3.
+	  Contains: USERID, FETHIO, FUSBIDIO, PGL1WAY, PMDL1WAY, IOL1WAY.
+	  Default 0xFFFFFFFF = all features at POR default.
+
+# --- DEVCFG2 (0xBFC0FFC4) ---
+# Controls: PLL configuration at boot
+
+config PIC32MZ_DEVCFG2
+	hex "DEVCFG2 value"
+	default 0xFFF9FFB8
+	help
+	  Device Configuration Word 2.
+	  Default 0xFFF9FFB8 = POR state:
+	    FPLLIDIV  = 001 (divide by 2)
+	    FPLLRNG   = 000 (bypass)
+	    FPLLICLK  = 1   (FRC as PLL input)
+	    FPLLMULT  = 0000000 (multiply by 1)
+	    FPLLODIV  = 010 (divide by 4)
+	    UPLLFSEL  = 1   (USB PLL input 24 MHz)
+
+	  Override in board defconfig for desired PLL configuration.
+	  Example for 200 MHz from 24 MHz EC crystal:
+	    0x7FF9F858 → PLLIDIV=3, FPLLRNG=001(5-10MHz), FPLLICLK=0(POSC),
+	                  FPLLMULT=0x31(50), FPLLODIV=001(÷2)
+
+# --- DEVCFG1 (0xBFC0FFC8) ---
+# Controls: Oscillator source, watchdog, clock switching
+
+config PIC32MZ_DEVCFG1
+	hex "DEVCFG1 value"
+	default 0xFFFFFFFF
+	help
+	  Device Configuration Word 1.
+	  Default 0xFFFFFFFF = POR state:
+	    FNOSC   = 111 (FRC oscillator)
+	    POSCMOD = 11  (POSC disabled)
+	    IESO    = 1   (two-speed startup enabled)
+	    FCKSM   = 11  (clock switching disabled, FSCM disabled)
+	    FWDTEN  = 1   (WDT enabled)
+	    FDMTEN  = 1   (Deadman Timer enabled)
+
+	  Override in board defconfig. Example for SPLL + EC oscillator:
+	    0xFF7FCFD9 → FNOSC=001(SPLL), POSCMOD=01(EC), FWDTEN=0(off),
+	                  FDMTEN=0(off), FCKSM=01(switching enabled)
+
+# --- DEVCFG0 (0xBFC0FFCC) ---
+# Controls: Debug, JTAG, code protection, boot ISA
+
+config PIC32MZ_DEVCFG0
+	hex "DEVCFG0 value"
+	default 0x7FFFFFEB
+	help
+	  Device Configuration Word 0.
+	  Default 0x7FFFFFEB = POR state:
+	    DEBUG   = 11  (debug disabled)
+	    JTAGEN  = 0   (JTAG disabled, pins available as GPIO)
+	    ICESEL  = 11  (ICD on PGEC1/PGED1)
+	    BOOTISA = 1   (MIPS32 instruction set at boot)
+	    TRCEN   = 0   (trace disabled)
+	    CP      = 1   (code protection off)
+
+	  Note: bit 31 (DEBUG<2>) is read-only and always 0 in programmed state.
+
+endif # PIC32MZ_DEVCFG
+
+endif # SOC_FAMILY_MICROCHIP_PIC32MZ_EF

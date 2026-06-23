@@ -1,0 +1,39 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+title: Microchip PIC32MZ Primary Oscillator (POSC)
+
+description: |
+  Primary Oscillator (POSC) using an external crystal or clock source
+  connected to OSC1/OSC2 pins. Supports XT and EC modes.
+  Commonly used as the PLL input for generating SYSCLK.
+
+  Reference: DS60001320H Section 8.0 "Oscillator Configuration"
+
+compatible: "microchip,pic32mz-posc"
+
+include: [base.yaml]
+
+properties:
+  clock-frequency:
+    type: int
+    required: true
+    description: |
+      External crystal or clock frequency in Hz.
+      Typical values: 12000000 (12 MHz), 24000000 (24 MHz).
+
+      This value is also used by the clock driver to validate USB PLL
+      configuration: DEVCFG2.UPLLFSEL must match this frequency
+      (UPLLFSEL=1 for 24 MHz, UPLLFSEL=0 for 12 MHz).
+      If mismatched, USB clock will be reported as unavailable.
+
+  posc-mode:
+    type: string
+    enum:
+      - "xt"
+      - "ec"
+    default: "ec"
+    description: |
+      Primary oscillator operating mode:
+        "xt" - Crystal oscillator mode (3-40 MHz crystal between OSC1/OSC2)
+        "ec" - External Clock mode (external clock signal on OSC1)

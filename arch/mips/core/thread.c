@@ -37,6 +37,14 @@ void arch_new_thread(struct k_thread *thread, k_thread_stack_t *stack,
 
 	stack_init->epc = (unsigned long)z_thread_entry;
 
+#ifdef CONFIG_SOC_SERIES_PIC32MZ_EFH
+	{
+		register unsigned long gp_val __asm__("$28");
+		stack_init->gp = gp_val;
+	}
+	stack_init->status |= (1 << 24);
+#endif
+
 	thread->callee_saved.sp = (unsigned long)stack_init;
 }
 

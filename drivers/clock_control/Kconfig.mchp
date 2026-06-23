@@ -38,6 +38,15 @@ config CLOCK_CONTROL_MCHP_PIC32CZ_CA
 	help
 	  Enable clock controller driver for Microchip PIC32CZ_CA family.
 
+config CLOCK_CONTROL_MCHP_PIC32MZ
+	bool
+	default y
+	depends on DT_HAS_MICROCHIP_PIC32MZ_CLOCK_ENABLED
+	help
+	  Enable clock controller driver for Microchip PIC32MZ family.
+	  Reads PLL/oscillator state from hardware (configured by DEVCFG at reset)
+	  and supports runtime clock switching between operating points.
+
 if CLOCK_CONTROL_MCHP_COMMON
 
 config CLOCK_CONTROL_MCHP_CONFIG_BOOTUP

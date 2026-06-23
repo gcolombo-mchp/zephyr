@@ -1,0 +1,29 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+config SOC_SERIES_PIC32MZ_EFH
+	bool
+	select SOC_FAMILY_MICROCHIP_PIC32MZ_EF
+	help
+	  Enable support for Microchip PIC32MZ EFH microcontrollers
+	  (MIPS microAptiv core with hardware crypto engine).
+
+config SOC_SERIES
+	default "pic32mz_efh" if SOC_SERIES_PIC32MZ_EFH
+
+config SOC_PIC32MZ2048EFH144
+	bool
+	select SOC_SERIES_PIC32MZ_EFH
+
+config SOC_PIC32MZ2048EFH100
+	bool
+	select SOC_SERIES_PIC32MZ_EFH
+
+config SOC_PIC32MZ2048EFH064
+	bool
+	select SOC_SERIES_PIC32MZ_EFH
+
+config SOC
+	default "pic32mz2048efh144" if SOC_PIC32MZ2048EFH144
+	default "pic32mz2048efh100" if SOC_PIC32MZ2048EFH100
+	default "pic32mz2048efh064" if SOC_PIC32MZ2048EFH064

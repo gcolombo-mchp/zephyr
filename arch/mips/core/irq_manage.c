@@ -27,6 +27,13 @@ FUNC_NORETURN void z_irq_spurious(const void *unused)
 	z_mips_fatal_error(K_ERR_SPURIOUS_IRQ, NULL);
 }
 
+/*
+ * Default arch_irq_enable/disable implementations for direct CP0 HW interrupts.
+ * When PIC32MZ EVIC is used, these are provided by the EVIC driver instead,
+ * since all 213 peripheral IRQs are managed through the EVIC registers.
+ */
+#ifndef CONFIG_INTC_PIC32MZ_EVIC
+
 void arch_irq_enable(unsigned int irq)
 {
 	unsigned int key;
@@ -59,6 +66,8 @@ int arch_irq_is_enabled(unsigned int irq)
 {
 	return read_c0_status() & (ST0_IP0 << irq);
 }
+
+#endif /* !CONFIG_INTC_PIC32MZ_EVIC */
 
 void z_mips_enter_irq(uint32_t ipending)
 {
@@ -94,6 +103,13 @@ void z_mips_enter_irq(uint32_t ipending)
 		z_check_stack_sentinel();
 	}
 }
+
+/*
+ * PIC32MZ EVIC variant: the CPU only sees IP2 asserting.
+ * The EVIC driver's ISR (registered on HW IRQ 2) reads INTSTAT
+ * and dispatches. So the z_mips_enter_irq still works: ipending
+ * will have only bit 2 set, which dispatches to pic32mz_evic_isr.
+ */
 
 #ifdef CONFIG_DYNAMIC_INTERRUPTS
 int arch_irq_connect_dynamic(unsigned int irq, unsigned int priority,

@@ -1,0 +1,30 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+title: Microchip PIC32MZ Fast RC Oscillator (FRC)
+
+description: |
+  Internal Fast RC Oscillator (FRC), nominally 8 MHz.
+  Can be used directly as SYSCLK source or as input to the System PLL.
+  Supports a tuning range via the OSCTUN register.
+
+  Reference: DS60001320H Section 8.0 "Oscillator Configuration"
+
+compatible: "microchip,pic32mz-frc"
+
+include: [base.yaml]
+
+properties:
+  clock-frequency:
+    type: int
+    default: 8000000
+    description: |
+      Nominal FRC frequency in Hz. Default is 8 MHz.
+
+  frc-tuning:
+    type: int
+    default: 0
+    description: |
+      FRC tuning value written to OSCTUN register.
+      Range: -32 to +31 (signed 6-bit), each step ~0.375%.
+      0 = factory calibrated center frequency.

@@ -33,3 +33,14 @@ config UART_MCHP_DBGU_G1
 	select SERIAL_HAS_DRIVER
 	help
 	  This option enables UART driver for group (g1) of DBGU peripherals.
+
+config UART_PIC32MZ
+	bool "PIC32MZ UART driver"
+	default y
+	depends on DT_HAS_MICROCHIP_PIC32MZ_UART_ENABLED
+	select SERIAL_HAS_DRIVER
+	select SERIAL_SUPPORT_INTERRUPT
+	help
+	  Enable UART driver for PIC32MZ MIPS devices.
+	  Supports polling and interrupt-driven modes with 8-level FIFO.
+	  Requires clock_control driver for baud rate calculation from PBCLK2.

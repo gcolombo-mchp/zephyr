@@ -1,0 +1,120 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+title: Microchip PIC32MZ UART
+
+description: |
+  Universal Asynchronous Receiver Transmitter (UART) for PIC32MZ devices.
+
+  The PIC32MZ UART is a full-duplex serial interface with the following features:
+    - 8-level deep TX and RX FIFOs (9-bit wide)
+    - Programmable baud rate generator (16-bit BRG)
+    - Standard speed (÷16) and high-speed (÷4) modes
+    - 8-bit or 9-bit data, odd/even/no parity, 1 or 2 stop bits
+    - Hardware flow control (RTS/CTS) via UEN bits
+    - IrDA encoder/decoder
+    - Loopback mode for diagnostics
+    - Auto-baud detection
+    - Address character detection (9-bit mode)
+    - 3 interrupt sources per instance: Fault, RX, TX
+
+  Register layout per UART instance (5 core registers, each with CLR/SET/INV):
+    +0x00  UxMODE   - Mode Control
+    +0x10  UxSTA    - Status and Control
+    +0x20  UxTXREG  - Transmit Data
+    +0x30  UxRXREG  - Receive Data
+    +0x40  UxBRG    - Baud Rate Generator
+
+  Baud rate calculation:
+    BRGH=0 (standard): Baud = PBCLK2 / (16 * (UxBRG + 1))
+    BRGH=1 (high-speed): Baud = PBCLK2 / (4 * (UxBRG + 1))
+
+  Note: Register spacing between UART instances is 0x200.
+  UARTs are clocked from Peripheral Bus Clock 2 (PBCLK2).
+
+  Reference: DS60001107H - PIC32 FRM Section 21 "UART"
+  Reference: DS60001320H - PIC32MZ EF Data Sheet, Section 22
+  Reference: Harmony CSP peripheral/uart_02478
+
+compatible: "microchip,pic32mz-uart"
+
+include:
+  - name: base.yaml
+  - name: uart-controller.yaml
+  - name: pinctrl-device.yaml
+
+properties:
+  reg:
+    required: true
+    description: |
+      Base address and size of the UART register block.
+      Size should be 0x50 (5 registers × 0x10 spacing including CLR/SET/INV).
+
+  interrupts:
+    required: true
+    description: |
+      Three interrupt specifiers in order:
+        1. Fault interrupt (framing, parity, overflow errors)
+        2. RX interrupt (receive data available)
+        3. TX interrupt (transmit buffer empty)
+      Each specifier is <irq_number priority> per the EVIC binding.
+
+  interrupt-names:
+    description: |
+      Names for the three interrupt sources: "fault", "rx", "tx".
+
+  clocks:
+    required: true
+    description: |
+      Reference to the peripheral bus clock (PBCLK2) that drives the BRG.
+      Typically: clocks = <&pbclk 2>;
+
+  current-speed:
+    type: int
+    default: 115200
+    description: |
+      Initial baud rate in bits per second.
+
+  microchip,high-speed:
+    type: boolean
+    description: |
+      If present, use high-speed baud rate mode (BRGH=1, ÷4 divisor).
+      Default (absent) uses standard mode (BRGH=0, ÷16 divisor).
+      High-speed mode provides better accuracy at high baud rates but
+      reduces noise immunity (single sample vs. majority detect).
+
+      Note: Silicon errata on some revisions affects BRGH=1 for baud
+      rates below 7.5 Mbps. Check device errata before enabling.
+
+  microchip,rx-fifo-threshold:
+    type: string
+    enum:
+      - "not-empty"
+      - "half-full"
+      - "three-quarter"
+    default: "not-empty"
+    description: |
+      RX interrupt trigger level (URXISEL bits in UxSTA):
+        "not-empty"     - Interrupt when at least 1 character in RX FIFO
+        "half-full"     - Interrupt when 4+ characters in RX FIFO
+        "three-quarter" - Interrupt when 6+ characters in RX FIFO
+
+  microchip,tx-fifo-threshold:
+    type: string
+    enum:
+      - "empty"
+      - "half-empty"
+      - "not-full"
+    default: "not-full"
+    description: |
+      TX interrupt trigger level (UTXISEL bits in UxSTA):
+        "empty"      - Interrupt when TX buffer and shift register are empty
+        "half-empty" - Interrupt when TX buffer is at least half empty
+        "not-full"   - Interrupt when TX buffer has at least one empty slot
+
+  hw-flow-control:
+    type: boolean
+    description: |
+      If present, enable hardware flow control using UxRTS and UxCTS pins.
+      Sets UEN<1:0> = 10 in UxMODE (UxRTS in flow control mode, UxCTS active).
+      Pin routing must be configured separately via PPS pinctrl.
