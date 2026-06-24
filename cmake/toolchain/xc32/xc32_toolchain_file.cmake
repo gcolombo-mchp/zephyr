@@ -40,7 +40,9 @@ list(SORT _dfp)
 list(GET _dfp -1 _dfp_path)
 file(TO_CMAKE_PATH "${_dfp_path}" _dfp_path_normalized)
 
-set(CMAKE_C_FLAGS "-mprocessor=${XC32_PROCESSOR} -mdfp=${_dfp_path_normalized}" CACHE STRING "" FORCE)
-set(CMAKE_CXX_FLAGS "-mprocessor=${XC32_PROCESSOR} -mdfp=${_dfp_path_normalized}" CACHE STRING "" FORCE)
-set(CMAKE_ASM_FLAGS "-mprocessor=${XC32_PROCESSOR} -mdfp=${_dfp_path_normalized}" CACHE STRING "" FORCE)
-set(CMAKE_EXE_LINKER_FLAGS "-mprocessor=${XC32_PROCESSOR} -mdfp=${_dfp_path_normalized}" CACHE STRING "" FORCE)
+set(_xc32_common_flags "-mprocessor=${XC32_PROCESSOR} -mdfp=${_dfp_path_normalized}")
+
+set(CMAKE_C_FLAGS "${_xc32_common_flags}" CACHE STRING "" FORCE)
+set(CMAKE_CXX_FLAGS "${_xc32_common_flags}" CACHE STRING "" FORCE)
+set(CMAKE_ASM_FLAGS "${_xc32_common_flags}" CACHE STRING "" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS "${_xc32_common_flags} -Wa,-W -L\"C:/Program Files/Microchip/xc32/v5.10/lib/gcc/pic32m/13.2.1/fpu64\"" CACHE STRING "" FORCE)

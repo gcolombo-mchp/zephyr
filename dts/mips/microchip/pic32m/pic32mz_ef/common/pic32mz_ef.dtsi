@@ -24,11 +24,10 @@
 			device_type = "cpu";
 			compatible = "mti,mips-m14kc";
 			reg = <0>;
-			#address-cells = <1>;
-			#size-cells = <1>;
 
 			cpu_intc: interrupt-controller {
 				#interrupt-cells = <1>;
+				#address-cells = <0>;
 				compatible = "mti,cpu-intc";
 				interrupt-controller;
 			};
@@ -104,46 +103,42 @@
 				pbclk4-div = <1>;
 				pbclk5-div = <2>;
 			};
-		};
 
-		/*
-		 * Operating Performance Points for runtime clock switching.
-		 * Board overlay can override/extend these.
-		 */
-		opp_table: opp-table {
-			compatible = "microchip,pic32mz-opp-table";
+			opp_table: opp-table {
+				compatible = "microchip,pic32mz-opp-table";
 
-			opp_200mhz: opp-200mhz {
-				opp-hz = <200000000>;
-				clock-source = "spll";
-				pbclk2-div = <2>;
-				pbclk3-div = <2>;
-				pbclk4-div = <1>;
-				pbclk5-div = <2>;
-				pbclk7-div = <1>;
-				pbclk8-div = <2>;
-			};
+				opp_200mhz: opp-200mhz {
+					opp-hz = <200000000>;
+					clock-source = "spll";
+					pbclk2-div = <2>;
+					pbclk3-div = <2>;
+					pbclk4-div = <1>;
+					pbclk5-div = <2>;
+					pbclk7-div = <1>;
+					pbclk8-div = <2>;
+				};
 
-			opp_100mhz: opp-100mhz {
-				opp-hz = <100000000>;
-				clock-source = "spll";
-				pbclk2-div = <4>;
-				pbclk3-div = <4>;
-				pbclk4-div = <2>;
-				pbclk5-div = <4>;
-				pbclk7-div = <1>;
-				pbclk8-div = <4>;
-			};
+				opp_100mhz: opp-100mhz {
+					opp-hz = <100000000>;
+					clock-source = "spll";
+					pbclk2-div = <4>;
+					pbclk3-div = <4>;
+					pbclk4-div = <2>;
+					pbclk5-div = <4>;
+					pbclk7-div = <1>;
+					pbclk8-div = <4>;
+				};
 
-			opp_8mhz: opp-8mhz {
-				opp-hz = <8000000>;
-				clock-source = "frc";
-				pbclk2-div = <1>;
-				pbclk3-div = <1>;
-				pbclk4-div = <1>;
-				pbclk5-div = <1>;
-				pbclk7-div = <1>;
-				pbclk8-div = <1>;
+				opp_8mhz: opp-8mhz {
+					opp-hz = <8000000>;
+					clock-source = "frc";
+					pbclk2-div = <1>;
+					pbclk3-div = <1>;
+					pbclk4-div = <1>;
+					pbclk5-div = <1>;
+					pbclk7-div = <1>;
+					pbclk8-div = <1>;
+				};
 			};
 		};
 
@@ -156,6 +151,7 @@
 			reg = <0xbf810000 0x1000>;
 			interrupt-controller;
 			#interrupt-cells = <2>;
+			#address-cells = <0>;
 			interrupt-parent = <&cpu_intc>;
 			interrupts = <2>;
 		};

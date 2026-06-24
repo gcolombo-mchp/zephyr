@@ -17,12 +17,13 @@ static ALWAYS_INLINE void mips_idle(unsigned int key)
 	/* unlock interrupts */
 	irq_unlock(key);
 
-	/* CP0 hazard barrier: ensure Status.IE takes effect */
+#ifdef CONFIG_SOC_SERIES_PIC32MZ_EFH
+	/* CP0 hazard barrier: ensure Status.IE takes effect before wait */
 	__asm__ volatile("ehb");
+#endif
 
-	/* Spin instead of wait - test if timer interrupt fires */
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
+	/* wait for interrupt */
+	__asm__ volatile("wait");
 }
 
 #ifndef CONFIG_ARCH_HAS_CUSTOM_CPU_IDLE

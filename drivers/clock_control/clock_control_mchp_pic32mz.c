@@ -404,6 +404,7 @@ update_dividers:
 	return 0;
 }
 
+#ifdef CONFIG_CLOCK_CONTROL_PIC32MZ_PMD
 /*
  * Peripheral Module Disable (PMD) support.
  * Provides finer-grained clock gating than PBCLKn on/off.
@@ -436,7 +437,9 @@ static int pic32mz_pmd_disable(uint8_t pmd_reg, uint8_t bit)
 	syskey_lock();
 	return 0;
 }
+#endif /* CONFIG_CLOCK_CONTROL_PIC32MZ_PMD */
 
+#ifdef CONFIG_CLOCK_CONTROL_PIC32MZ_REFCLK
 /*
  * Reference Clock (REFO1-4) support.
  * Provides configurable clock output for external peripherals.
@@ -489,6 +492,7 @@ static int pic32mz_refclk_configure(const struct pic32mz_clock_config *cfg,
 
 	return 0;
 }
+#endif /* CONFIG_CLOCK_CONTROL_PIC32MZ_REFCLK */
 
 static DEVICE_API(clock_control, pic32mz_clock_api) = {
 	.on = pic32mz_clock_on,
