@@ -1,7 +1,7 @@
 /dts-v1/;
 
 #include <microchip/pic32m/pic32mz_ef/pic32mz_efh/pic32mz2048efh144.dtsi>
-#include <zephyr/dt-bindings/pinctrl/pic32mz/pic32mz-efh144-pps.h>
+#include <dt-bindings/pic32m/pic32mz_ef/pic32mz-efh144-pps.h>
 
 / {
 	model = "Microchip PIC32MZ EF Starter Kit (DM320007)";
