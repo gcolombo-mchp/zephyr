@@ -1,0 +1,79 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+title: Microchip PIC32MZ Peripheral Bus Clock Dividers
+
+description: |
+  Peripheral Bus Clock (PBCLK) distribution for PIC32MZ devices.
+  SYSCLK is divided independently for each of 8 peripheral buses (PBCLK1-PBCLK8).
+
+  Each peripheral is assigned to a specific bus:
+    PBCLK1 - Reserved (always = SYSCLK when enabled)
+    PBCLK2 - UART, SPI, I2C, Comparator, ADC control
+    PBCLK3 - Timer, IC, OC
+    PBCLK4 - GPIO (Ports)
+    PBCLK5 - Flash Controller, Crypto, RNG, USB, CAN, Ethernet
+    PBCLK7 - CPU, Deadman Timer
+    PBCLK8 - EBI
+
+  Peripherals reference this node with:
+    clocks = <&pbclk N>;
+  where N is the PBCLK index (1-8).
+
+  Reference: DS60001320H Section 8.0 "Oscillator Configuration"
+
+compatible: "microchip,pic32mz-pbclk"
+
+include: [base.yaml]
+
+properties:
+  clocks:
+    required: true
+    description: |
+      Parent clock source, typically the System PLL (&spll).
+
+  "#clock-cells":
+    const: 1
+    type: int
+    description: |
+      Clock specifier cell identifying the peripheral bus index (1-8).
+
+  pbclk1-div:
+    type: int
+    default: 1
+    description: PBCLK1 divider (1 = same as SYSCLK). Usually fixed at 1.
+
+  pbclk2-div:
+    type: int
+    default: 2
+    description: |
+      PBCLK2 divider. PBCLK2 = SYSCLK / pbclk2-div.
+      Valid values: 1-128 (power of 2 only: 1,2,4,8,16,32,64,128).
+
+  pbclk3-div:
+    type: int
+    default: 2
+    description: PBCLK3 divider.
+
+  pbclk4-div:
+    type: int
+    default: 1
+    description: PBCLK4 divider (GPIO).
+
+  pbclk5-div:
+    type: int
+    default: 2
+    description: PBCLK5 divider (Flash, Crypto, USB, CAN, Ethernet).
+
+  pbclk7-div:
+    type: int
+    default: 1
+    description: PBCLK7 divider (CPU clock).
+
+  pbclk8-div:
+    type: int
+    default: 2
+    description: PBCLK8 divider (EBI).
+
+clock-cells:
+  - bus

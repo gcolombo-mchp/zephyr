@@ -1,0 +1,91 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+title: Microchip PIC32MZ Operating Performance Points Table
+
+description: |
+  Operating Performance Points (OPP) for PIC32MZ runtime clock switching.
+
+  Each child node defines a named operating point that the clock driver can
+  switch to at runtime. This enables power management by selecting lower
+  clock speeds when full performance is not needed, and restoring full speed
+  when required.
+
+  The clock driver switches the SYSCLK source via the OSCCON register
+  (requires SYSKEY unlock sequence) and adjusts PBCLK dividers to maintain
+  valid peripheral timing.
+
+  Switching constraints:
+    - SPLL requires lock time (~2-5 µs) when switching FROM another source
+    - FRC is always available immediately (no lock time)
+    - PBCLK dividers can be changed without SYSKEY
+    - Peripherals using a PBCLK should be idle during divider change
+
+  Reference: DS60001320H Section 8.0 "Oscillator Configuration"
+
+compatible: "microchip,pic32mz-opp-table"
+
+child-binding:
+  description: |
+    A single operating performance point.
+
+  properties:
+    opp-hz:
+      type: int
+      required: true
+      description: |
+        Target SYSCLK frequency in Hz for this operating point.
+
+    clock-source:
+      type: string
+      required: true
+      enum:
+        - "frc"
+        - "frc-div"
+        - "spll"
+        - "posc"
+        - "sosc"
+        - "lprc"
+      description: |
+        SYSCLK source to select (written to OSCCON.NOSC):
+          "frc"     - Fast RC oscillator (8 MHz)
+          "frc-div" - FRC with postscaler (FRCDIV)
+          "spll"    - System PLL output
+          "posc"    - Primary oscillator (crystal/external clock)
+          "sosc"    - Secondary oscillator (32.768 kHz)
+          "lprc"    - Low-Power RC oscillator (32 kHz)
+
+    pbclk1-div:
+      type: int
+      default: 1
+      description: PBCLK1 divider for this OPP (1-128, power of 2).
+
+    pbclk2-div:
+      type: int
+      default: 2
+      description: PBCLK2 divider (UART, SPI, I2C).
+
+    pbclk3-div:
+      type: int
+      default: 2
+      description: PBCLK3 divider (Timers, IC, OC).
+
+    pbclk4-div:
+      type: int
+      default: 1
+      description: PBCLK4 divider (GPIO ports).
+
+    pbclk5-div:
+      type: int
+      default: 2
+      description: PBCLK5 divider (Flash, Crypto, USB, CAN, Ethernet).
+
+    pbclk7-div:
+      type: int
+      default: 1
+      description: PBCLK7 divider (CPU, Deadman Timer).
+
+    pbclk8-div:
+      type: int
+      default: 2
+      description: PBCLK8 divider (EBI).

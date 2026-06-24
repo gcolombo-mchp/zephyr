@@ -17,6 +17,25 @@
 
 static void interrupt_init(void)
 {
+#ifdef CONFIG_SOC_SERIES_PIC32MZ_EFH
+	/*
+	 * On PIC32MZ with XC32 crt0:
+	 * - EBASE is already set to 0x9D000000 (program flash) by crt0
+	 * - Exception vector at EBASE+0x180 points to our pic32mz_isr.S
+	 * - No need to copy vectors to RAM
+	 * - Must clear BEV so exceptions go to EBASE, not boot flash
+	 * - Must enable Status.IM2 since ALL EVIC interrupts use Cause.IP2
+	 */
+	extern uint32_t mips_cp0_status_int_mask;
+	unsigned long status;
+
+	irq_lock();
+	mips_cp0_status_int_mask = 0;
+	status = read_c0_status();
+	status &= ~ST0_BEV;
+	status &= ~(0x3F << 10);
+	write_c0_status(status);
+#else
 	extern char __isr_vec[];
 	extern uint32_t mips_cp0_status_int_mask;
 	unsigned long ebase;
@@ -34,6 +53,7 @@ static void interrupt_init(void)
 	 * use exception vector in RAM.
 	 */
 	write_c0_status(read_c0_status() & ~(ST0_BEV));
+#endif
 }
 
 /**

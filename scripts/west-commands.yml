@@ -102,3 +102,8 @@ west-commands:
       - name: gtags
         class: Gtags
         help: create a GNU global tags file for the current workspace
+  - file: scripts/west_commands/pic32m_build.py
+    commands:
+      - name: pic32m-build
+        class: Pic32mBuild
+        help: build a Zephyr application for PIC32M using XC32 toolchain

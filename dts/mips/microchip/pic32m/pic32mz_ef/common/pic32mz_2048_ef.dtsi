@@ -1,0 +1,19 @@
+/*
+ * Copyright (c) 2026 Microchip Technology Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Memory sizes for PIC32MZ EF devices with 2048 KB Flash / 512 KB RAM.
+ */
+
+#include <mem.h>
+
+/ {
+	flash0: flash@9d000000 {
+		reg = <0x9d000000 DT_SIZE_K(2048)>;
+	};
+
+	sram0: memory@80000000 {
+		reg = <0x80000000 DT_SIZE_K(512)>;
+	};
+};

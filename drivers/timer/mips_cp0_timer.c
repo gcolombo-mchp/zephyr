@@ -55,6 +55,10 @@ static void timer_isr(const void *arg)
 			next += CYC_PER_TICK;
 		}
 		set_cp0_compare(next);
+#ifdef CONFIG_SOC_SERIES_PIC32MZ_EFH
+	} else {
+		set_cp0_compare(now + MAX_CYC);
+#endif
 	}
 
 	k_spin_unlock(&lock, key);
@@ -114,14 +118,13 @@ uint32_t sys_clock_cycle_get_32(void)
 
 static int sys_clock_driver_init(void)
 {
-
+#ifdef CONFIG_SOC_SERIES_PIC32MZ_EFH
+	irq_connect_dynamic(MIPS_MACHINE_TIMER_IRQ, 0, timer_isr, NULL, 0);
+#else
 	IRQ_CONNECT(MIPS_MACHINE_TIMER_IRQ, 0, timer_isr, NULL, 0);
-	last_count = get_cp0_count();
+#endif
 
-	/*
-	 * In a tickless system the first tick might possibly be pushed
-	 * much further into the future than is being done here.
-	 */
+	last_count = get_cp0_count();
 	set_cp0_compare(last_count + CYC_PER_TICK);
 
 	irq_enable(MIPS_MACHINE_TIMER_IRQ);

@@ -1,0 +1,37 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+# Execute from flash (XIP), data copied to RAM at startup
+CONFIG_XIP=y
+
+# Output format for MPLAB IPE
+CONFIG_BUILD_OUTPUT_HEX=y
+
+# Console
+CONFIG_CONSOLE=y
+CONFIG_SERIAL=y
+CONFIG_UART_CONSOLE=y
+
+# --------------------------------------------------------------------------
+# PIC32MZ EF Starter Kit (DM320007) Configuration Bits
+#
+# Hardware: 24 MHz EC oscillator on OSC1/OSC2
+# Target: SYSCLK = 200 MHz via System PLL
+#   PLL input:  POSC 24 MHz / 3 = 8 MHz (in range 5-10 MHz)
+#   VCO:        8 MHz × 50 = 400 MHz (in range 350-700 MHz)
+#   SYSCLK:     400 MHz / 2 = 200 MHz
+# --------------------------------------------------------------------------
+
+# Use exact DEVCFG values from working Harmony GPIO project
+# DEVCFG1: 0x5F74FF39 - FNOSC=SPLL, POSCMOD=EC, WDT off, DMT off
+CONFIG_PIC32MZ_DEVCFG1=0x5F74FF39
+
+# DEVCFG2: 0xFFF9B198 - PLL: POSC/3 * 50 / 2 = 200MHz
+CONFIG_PIC32MZ_DEVCFG2=0xFFF9B198
+
+# DEVCFG3: 0xFFFFFFFF
+CONFIG_PIC32MZ_DEVCFG3=0xFFFFFFFF
+
+# DEVCFG0: 0xFFFFF7D7 - BOOTISA=MIPS32(1), JTAG off
+# Based on Harmony 0xFFFFF7D3 but with bit2 set for MIPS32 boot
+CONFIG_PIC32MZ_DEVCFG0=0xFFFFF7D7

@@ -1,0 +1,49 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+title: Microchip PIC32MZ Clock Controller
+
+description: |
+  PIC32MZ clock controller container node.
+  Provides access to the oscillator control (OSCCON), system PLL (SPLLCON),
+  and peripheral bus clock dividers (PB1DIV-PB8DIV).
+
+  This is the top-level clock node that contains child nodes for each
+  clock source (FRC, POSC, SPLL), the PBCLK distribution, and an optional
+  OPP table for runtime clock switching.
+
+  Driver behavior:
+    - At init (PRE_KERNEL_1): reads OSCCON and SPLLCON to determine current
+      SYSCLK source and frequency. Reads PBxDIV for each peripheral bus.
+      Does NOT reprogram PLL (that is done by DEVCFG at reset).
+    - At runtime: supports switching between operating points defined in
+      the opp-table child node via clock_control_configure().
+    - Exposes clock_control_get_rate() for peripheral drivers to query
+      their bus clock frequency.
+
+  Reference: DS60001320H Section 8.0 "Oscillator Configuration"
+
+compatible: "microchip,pic32mz-clock"
+
+include:
+  - name: base.yaml
+
+properties:
+  reg:
+    required: true
+    description: |
+      Register regions:
+        [0] - Oscillator and PLL registers (OSCCON, SPLLCON, OSCTUN, etc.)
+        [1] - Peripheral Bus Clock divider registers (PB1DIV-PB8DIV)
+
+  reg-names:
+    required: true
+    description: |
+      Names for register regions: "osc", "pb"
+
+  "#clock-cells":
+    const: 0
+    type: int
+    description: |
+      This node has no clock cells itself. Peripherals reference the
+      pbclk child node which has #clock-cells = <1>.

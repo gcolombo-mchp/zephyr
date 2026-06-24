@@ -1,0 +1,71 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+title: Microchip PIC32MZ System PLL
+
+description: |
+  System PLL (SPLL) for PIC32MZ devices.
+  Generates SYSCLK from FRC or POSC input.
+
+  Output frequency = (Input / pll-input-div) * pll-mult / pll-output-div
+
+  Example: 24 MHz POSC, PLLIDIV=3, PLLMULT=50, PLLODIV=2
+    → (24/3) * 50 / 2 = 200 MHz SYSCLK
+
+  Constraints:
+    - PLL input (after PLLIDIV): 5-64 MHz (recommended 5-10 MHz)
+    - VCO frequency (after PLLMULT): 350-700 MHz
+    - Output (after PLLODIV): max 200 MHz (or 252 MHz for -250 speed grade)
+
+  Reference: DS60001320H Section 8.0 "Oscillator Configuration"
+
+compatible: "microchip,pic32mz-spll"
+
+include: [base.yaml]
+
+properties:
+  clocks:
+    required: true
+    description: |
+      Parent clock source for the PLL input.
+      Must reference either &frc or &posc.
+
+  pll-input-div:
+    type: int
+    required: true
+    enum:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+    description: |
+      PLL input divider (PLLIDIV field of SPLLCON).
+      Divides the input clock before the PLL multiplier.
+      Result should be in range 5-10 MHz for best jitter performance.
+
+  pll-mult:
+    type: int
+    required: true
+    description: |
+      PLL feedback multiplier (PLLMULT field of SPLLCON).
+      Valid range: 1-128.
+      VCO frequency = (input / pll-input-div) * pll-mult.
+      VCO must be in range 350-700 MHz.
+
+  pll-output-div:
+    type: int
+    required: true
+    enum:
+      - 2
+      - 4
+      - 8
+      - 16
+      - 32
+    description: |
+      PLL output divider (PLLODIV field of SPLLCON).
+      Final SYSCLK = VCO / pll-output-div.
+      Result must not exceed 200 MHz (or 252 MHz for -250 grade).

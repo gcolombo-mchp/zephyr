@@ -1,0 +1,73 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+title: Microchip PIC32MZ Peripheral Pin Select (PPS) Pin Controller
+
+description: |
+  PIC32MZ Peripheral Pin Select (PPS) pin controller.
+
+  On PIC32MZ devices, most peripheral I/O signals (UART TX/RX, SPI SDI/SDO,
+  I2C SDA/SCL, etc.) are not hard-wired to specific pins. Instead, they are
+  routed through the PPS multiplexer, allowing flexible pin assignment.
+
+  PPS is configured via two sets of registers:
+    - Input registers (e.g., U1RXR, SDI1R): select which pin drives a
+      peripheral input
+    - Output registers (e.g., RPA0R, RPB0R): select which peripheral function
+      drives a pin output
+
+  PPS registers base address: 0xBF801400 (offset from system config base).
+
+  Pin configuration example:
+
+    &pinctrl {
+      uart2_default: uart2_default {
+        group1 {
+          pinmux = <PPS_U2TX_RPG9>, <PPS_U2RX_RPB0>;
+        };
+      };
+    };
+
+  Reference: DS60001320H Section 12.0 "I/O Ports"
+
+compatible: "microchip,pic32mz-pinctrl"
+
+include: base.yaml
+
+properties:
+  reg:
+    required: true
+    description: |
+      Register region covering the PPS input and output selection registers.
+
+  "#address-cells":
+    const: 1
+
+  "#size-cells":
+    const: 1
+
+child-binding:
+  description: |
+    Each child node defines pin configuration for a particular device state.
+
+  child-binding:
+    description: |
+      Pin group with shared configuration properties.
+
+    include:
+      - name: pincfg-node.yaml
+        property-allowlist:
+          - bias-pull-up
+          - bias-pull-down
+          - drive-open-drain
+          - input-enable
+          - output-enable
+
+    properties:
+      pinmux:
+        required: true
+        type: array
+        description: |
+          Array of PPS pin mux values. Each entry encodes the peripheral
+          function and physical pin assignment using macros defined in
+          dt-bindings/pinctrl/pic32mz-pinctrl.h.

@@ -1,0 +1,61 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+title: Microchip PIC32MZ GPIO Port
+
+description: |
+  GPIO controller for a single port (A-K) on PIC32MZ devices.
+
+  Each port provides up to 16 pins with the following per-pin capabilities:
+    - Digital input/output (TRIS/LAT/PORT registers)
+    - Analog/Digital selection (ANSEL register)
+    - Open-drain output (ODC register)
+    - Internal pull-up/pull-down (CNPU/CNPD registers)
+    - Input Change Notification interrupt (CNCON/CNEN/CNSTAT)
+
+  Register layout per port (0x100 bytes with CLR/SET/INV for each):
+    +0x00 ANSEL   - Analog Select
+    +0x10 TRIS    - Tri-State (direction: 1=input, 0=output)
+    +0x20 PORT    - Port Read
+    +0x30 LAT     - Latch (output data)
+    +0x40 ODC     - Open-Drain Configuration
+    +0x50 CNPU    - Change Notification Pull-Up Enable
+    +0x60 CNPD    - Change Notification Pull-Down Enable
+    +0x70 CNCON   - Change Notification Control
+    +0x80 CNEN0   - CN Enable (falling edge)
+    +0x90 CNSTAT  - CN Status
+    +0xA0 CNEN1   - CN Enable (rising edge)
+
+  Reference: DS60001320H Section 12.0 "I/O Ports"
+
+compatible: "microchip,pic32mz-gpio"
+
+include:
+  - name: base.yaml
+  - name: gpio-controller.yaml
+
+properties:
+  reg:
+    required: true
+    description: |
+      Base address and size of the port register block (0x100 bytes).
+
+  "#gpio-cells":
+    const: 2
+
+  interrupt-parent:
+    description: Reference to the EVIC interrupt controller.
+
+  clocks:
+    description: |
+      Reference to PBCLK4 (GPIO bus clock).
+
+  microchip,port-index:
+    type: int
+    description: |
+      Port index (0=A, 1=B, ... 10=K).
+      Used by the driver to compute Change Notification interrupt vectors.
+
+gpio-cells:
+  - pin
+  - flags

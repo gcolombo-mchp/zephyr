@@ -1,0 +1,121 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+title: Microchip PIC32MZ Enhanced Vectored Interrupt Controller (EVIC)
+
+description: |
+  Enhanced Vectored Interrupt Controller for PIC32MZ devices.
+
+  The EVIC sits between peripheral interrupt sources and the MIPS CPU core
+  interrupt controller (mti,cpu-intc). It receives up to 213 independent
+  interrupt requests, prioritizes them, and presents a single signal to the
+  CPU on one of the 8 hardware interrupt lines (typically HW interrupt 2).
+
+  Key features:
+    - Up to 213 interrupt sources, each with a dedicated vector
+    - 7 programmable priority levels (1-7, 0 = disabled)
+    - 4 sub-priority levels within each priority
+    - Variable vector offset per source (OFFxxx registers)
+    - Multi-vector and single-vector operation modes
+    - 7 shadow register sets assignable to any priority level
+    - 5 external interrupt pins with edge polarity control
+
+  Register layout at base address (e.g., 0xBF810000):
+    +0x0000  INTCON   - Interrupt Control (MVEC bit enables multi-vector mode)
+    +0x0010  PRISS    - Priority Shadow Set assignment
+    +0x0020  INTSTAT  - Interrupt Status (active vector/priority)
+    +0x0030  IPTMR    - Interrupt Proximity Timer
+    +0x0040  IFS0     - Interrupt Flag Status 0 (IRQ 0-31)
+    +0x0050  IFS1     - Interrupt Flag Status 1 (IRQ 32-63)
+    +0x0060  IFS2     - Interrupt Flag Status 2 (IRQ 64-95)
+    +0x0070  IFS3     - Interrupt Flag Status 3 (IRQ 96-127)
+    +0x0080  IFS4     - Interrupt Flag Status 4 (IRQ 128-159)
+    +0x0090  IFS5     - Interrupt Flag Status 5 (IRQ 160-191)
+    +0x00A0  IFS6     - Interrupt Flag Status 6 (IRQ 192-212)
+    +0x00C0  IEC0     - Interrupt Enable Control 0
+    ...
+    +0x0120  IEC6     - Interrupt Enable Control 6
+    +0x0140  IPC0     - Interrupt Priority Control 0 (4 IRQs per register)
+    ...
+    +0x02AC  IPC53    - Interrupt Priority Control 53
+    +0x0540  OFF000   - Vector Offset for IRQ 0
+    ...
+    +0x08B4  OFF212   - Vector Offset for IRQ 212
+
+  Each IFSn/IECn register covers 32 interrupt sources.
+  IRQ N is at: IFS[N/32] bit (N%32), IEC[N/32] bit (N%32).
+
+  Each IPC register holds priority for 4 IRQs:
+    Bits [4:2]   = priority for IRQ (regidx*4 + 0)
+    Bits [1:0]   = sub-priority for IRQ (regidx*4 + 0)
+    Bits [12:10] = priority for IRQ (regidx*4 + 1)
+    ... and so on in 8-bit groups.
+
+  In Zephyr, the EVIC driver must:
+    1. Set INTCON.MVEC = 1 (multi-vector mode)
+    2. Program OFFxxx registers to point to the Zephyr ISR dispatch table
+    3. Provide irq_enable/irq_disable via IECn SET/CLR registers
+    4. Clear interrupt flags via IFSn CLR on ISR entry
+
+  Reference: DS60001320H Section 7.0 "CPU Exceptions and Interrupt Controller"
+  Reference: Harmony CSP peripheral/evic_02907
+
+compatible: "microchip,pic32mz-evic"
+
+include: [interrupt-controller.yaml, base.yaml]
+
+properties:
+  reg:
+    required: true
+    description: |
+      Base address and size of the EVIC register block.
+      Typically <0xbf810000 0x1000>.
+
+  interrupts:
+    required: true
+    description: |
+      The CPU hardware interrupt line that the EVIC drives.
+      In a typical PIC32MZ configuration, EVIC output is routed to
+      CPU HW interrupt 2 (IP2 in CP0 Cause register).
+      Specified as a single cell referencing the parent mti,cpu-intc.
+
+  interrupt-parent:
+    required: true
+    description: |
+      Must reference the CPU interrupt controller (&cpu_intc).
+
+  "#interrupt-cells":
+    const: 2
+    description: |
+      Two cells per interrupt specifier:
+        Cell 0: IRQ number (0-212)
+        Cell 1: Priority level (1-7, where 7 is highest)
+
+      Sub-priority defaults to 0 and can be set at runtime by the driver.
+
+  microchip,num-irqs:
+    type: int
+    default: 213
+    description: |
+      Number of interrupt sources supported.
+      PIC32MZ EF family: 213.
+
+  microchip,shadow-sets:
+    type: int
+    default: 7
+    description: |
+      Number of shadow register sets available (0 = none, max 7).
+      Shadow sets reduce ISR latency by eliminating register save/restore
+      for the assigned priority level. Configured via PRISS register.
+
+  microchip,priority-to-shadow:
+    type: array
+    description: |
+      Optional mapping of priority levels to shadow register sets.
+      Array of 7 entries (index = priority 1-7), each value = shadow set (0-7, 0 = none).
+      Example: <0 0 0 0 1 2 3> assigns shadow sets 1,2,3 to priorities 5,6,7.
+      If omitted, shadow sets are not used.
+
+interrupt-cells:
+  - irq
+  - priority

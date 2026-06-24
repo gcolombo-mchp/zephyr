@@ -46,6 +46,28 @@ config CLOCK_CONTROL_MCHP_PIC32CZ_CA
 	help
 	  Enable clock controller driver for Microchip PIC32CZ_CA family.
 
+config CLOCK_CONTROL_MCHP_PIC32MZ
+	bool
+	default y
+	depends on DT_HAS_MICROCHIP_PIC32MZ_CLOCK_ENABLED
+	help
+	  Enable clock controller driver for Microchip PIC32MZ family.
+	  Reads PLL/oscillator state from hardware (configured by DEVCFG at reset)
+	  and supports runtime clock switching between operating points.
+
+config CLOCK_CONTROL_PIC32MZ_PMD
+	bool "PIC32MZ Peripheral Module Disable (PMD) support"
+	depends on CLOCK_CONTROL_MCHP_PIC32MZ
+	help
+	  Enable PMD clock gating for individual peripherals via PMD1-7 registers.
+
+config CLOCK_CONTROL_PIC32MZ_REFCLK
+	bool "PIC32MZ Reference Clock (REFO) output support"
+	depends on CLOCK_CONTROL_MCHP_PIC32MZ
+	help
+	  Enable configuration of Reference Clock outputs (REFO1-4) for
+	  external peripherals.
+
 if CLOCK_CONTROL_MCHP_COMMON
 
 config CLOCK_CONTROL_MCHP_CONFIG_BOOTUP

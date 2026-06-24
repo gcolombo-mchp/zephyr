@@ -1,0 +1,14 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+config TOOLCHAIN_XC32
+	bool
+	default y
+	select FULL_LIBC_SUPPORTED
+
+config XC32_PROCESSOR
+	string "XC32 device processor name"
+	default "32MZ2048EFH144"
+	help
+	  Device name passed to xc32-gcc via -mprocessor= flag.
+	  This is the part number without the "PIC" prefix.

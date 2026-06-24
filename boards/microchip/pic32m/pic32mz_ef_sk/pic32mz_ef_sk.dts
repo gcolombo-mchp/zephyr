@@ -1,0 +1,47 @@
+/dts-v1/;
+
+#include <microchip/pic32m/pic32mz_ef/pic32mz_efh/pic32mz2048efh144.dtsi>
+#include <dt-bindings/pic32m/pic32mz_ef/pic32mz-efh144-pps.h>
+
+/ {
+	model = "Microchip PIC32MZ EF Starter Kit (DM320007)";
+	compatible = "microchip,pic32mz-ef-sk";
+
+	chosen {
+		zephyr,console = &uart2;
+		zephyr,shell-uart = &uart2;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+	};
+
+	aliases {
+		led0 = &led1;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		led1: led_1 {
+			gpios = <&porth 0 GPIO_ACTIVE_HIGH>;
+			label = "LED1";
+		};
+	};
+};
+
+&pinctrl {
+	uart2_default: uart2_default {
+		group1 {
+			pinmux = <PPS_U2TX_RPB14>, <PPS_U2RX_RPG6>;
+		};
+	};
+};
+
+&porth {
+	status = "okay";
+};
+
+&uart2 {
+	status = "okay";
+	current-speed = <115200>;
+	pinctrl-0 = <&uart2_default>;
+	pinctrl-names = "default";
+};

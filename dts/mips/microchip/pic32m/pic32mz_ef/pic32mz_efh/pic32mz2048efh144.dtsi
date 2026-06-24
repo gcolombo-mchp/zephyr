@@ -1,0 +1,11 @@
+/*
+ * Copyright (c) 2026 Microchip Technology Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Device tree include for PIC32MZ2048EFH144.
+ * 2048 KB Flash, 512 KB RAM, 144-pin, crypto engine, FPU.
+ */
+
+#include <microchip/pic32m/pic32mz_ef/common/pic32mz_ef_144.dtsi>
+#include <microchip/pic32m/pic32mz_ef/common/pic32mz_2048_ef.dtsi>

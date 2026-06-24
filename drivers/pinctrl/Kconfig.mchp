@@ -14,6 +14,15 @@ config PINCTRL_MCHP_PORT_G1
 	help
 	  This option enables PINCTRL driver for group (g1) of PORT peripherals.
 
+config PINCTRL_PIC32MZ_PPS
+	bool "PIC32MZ Peripheral Pin Select (PPS) pin controller"
+	default y
+	depends on DT_HAS_MICROCHIP_PIC32MZ_PINCTRL_ENABLED
+	help
+	  Enable the PPS pin controller for PIC32MZ MIPS devices.
+	  Configures peripheral-to-pin routing via PPS input and output
+	  selection registers, protected by SYSKEY and CFGCON.IOLOCK.
+
 if PINCTRL_MCHP_COMMON
 
 config PIN_OPEN_DRAIN

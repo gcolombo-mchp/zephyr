@@ -7,3 +7,10 @@ config GPIO_MCHP_PORT_G1
 	depends on DT_HAS_MICROCHIP_PORT_G1_GPIO_ENABLED
 	help
 	  This option enables GPIO driver for group (g1) of PORT peripherals.
+
+config GPIO_PIC32MZ
+	bool "PIC32MZ GPIO driver"
+	default y
+	depends on DT_HAS_MICROCHIP_PIC32MZ_GPIO_ENABLED
+	help
+	  Enable GPIO driver for PIC32MZ MIPS devices.

@@ -127,3 +127,7 @@ ZephyrModuleFile.txt
 
 # Node dependecies
 node_modules
+
+# MPLAB IPE programming logs
+log.*
+MPLABXLog*
