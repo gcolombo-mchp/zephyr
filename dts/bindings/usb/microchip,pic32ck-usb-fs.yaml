@@ -1,0 +1,26 @@
+# Copyright (c) 2026 Microchip Technology Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+    Microchip PIC32CK Full-Speed USB in device mode.
+
+    The PIC32CK USB FS controller has 8 bidirectional endpoints (EP0-EP7).
+
+compatible: "microchip,pic32ck-usb-fs"
+
+include:
+  - name: usb-ep.yaml
+  - name: pinctrl-device.yaml
+
+properties:
+  reg:
+    required: true
+
+  interrupts:
+    required: true
+
+  num-bidir-endpoints:
+    required: true
+    type: int
+    description: |
+      Number of bidirectional endpoints supported by the controller.
