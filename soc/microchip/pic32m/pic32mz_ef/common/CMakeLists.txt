@@ -4,6 +4,36 @@
 zephyr_include_directories(.)
 
 if("${ZEPHYR_TOOLCHAIN_VARIANT}" STREQUAL "xc32")
+  # --- Device-specific flags from board.cmake ---
+  if(NOT DEFINED XC32_PROCESSOR)
+    message(FATAL_ERROR "XC32_PROCESSOR not defined. Set it in your board's board.cmake")
+  endif()
+
+  # Resolve DFP path
+  if(DEFINED ENV{DFP_DIR})
+    file(TO_CMAKE_PATH "$ENV{DFP_DIR}" _dfp_path)
+  else()
+    if(NOT DEFINED XC32_DFP_FAMILY)
+      message(FATAL_ERROR "XC32_DFP_FAMILY not defined. Set it in your board's board.cmake")
+    endif()
+    if(DEFINED ENV{USERPROFILE})
+      set(_home "$ENV{USERPROFILE}")
+    elseif(DEFINED ENV{HOME})
+      set(_home "$ENV{HOME}")
+    endif()
+    file(GLOB _dfp_versions "${_home}/.mchp_packs/Microchip/${XC32_DFP_FAMILY}/*")
+    list(SORT _dfp_versions)
+    list(GET _dfp_versions -1 _dfp_path)
+    file(TO_CMAKE_PATH "${_dfp_path}" _dfp_path)
+  endif()
+
+  # Apply device flags globally
+  zephyr_compile_options(-mprocessor=${XC32_PROCESSOR} -mdfp=${_dfp_path})
+  zephyr_link_libraries(-mprocessor=${XC32_PROCESSOR} -mdfp=${_dfp_path})
+  get_filename_component(_xc32_bin_dir "${CMAKE_C_COMPILER}" DIRECTORY)
+  get_filename_component(_xc32_root "${_xc32_bin_dir}" DIRECTORY)
+  zephyr_link_libraries(-L"${_xc32_root}/lib/gcc/pic32m/13.2.1/fpu64")
+
   # Select linker script based on kernel usage.
   # Bare-metal (PIC32M_NO_KERNEL_BOOT defined): use minimal XC32 linker script.
   # Kernel mode: use extended linker script with Zephyr sections.
