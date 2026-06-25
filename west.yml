@@ -34,6 +34,21 @@ manifest:
       path: modules/hal/microchip
       groups:
         - hal
+    - name: hal_atmel
+      revision: 8f95c79f2a80427ef446563cc9addefa959e92a9
+      path: modules/hal/atmel
+      groups:
+        - hal
+    - name: cmsis
+      revision: 512cc7e895e8491696b61f7ba8066b4a182569b8
+      path: modules/hal/cmsis
+      groups:
+        - hal
+    - name: cmsis_6
+      revision: b2dfbe1a20bbd49c2d2c605073799671074bbb30
+      path: modules/hal/cmsis_6
+      groups:
+        - hal
     - name: picolibc
       path: modules/lib/picolibc
       revision: 01254932e8e81085817ed61fd858648584ffe37c
