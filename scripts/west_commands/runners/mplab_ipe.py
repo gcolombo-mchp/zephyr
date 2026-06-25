@@ -6,6 +6,7 @@
 import argparse
 import os
 import shlex
+import tempfile
 
 from runners.core import RunnerCaps, RunnerConfig, ZephyrBinaryRunner
 
@@ -104,4 +105,5 @@ class MPLABIPEBinaryRunner(ZephyrBinaryRunner):
             cmd.append("-V")
 
         self.logger.info("Running: %s", " ".join(shlex.quote(p) for p in cmd))
-        self.check_call(cmd)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            self.check_call(cmd, cwd=tmpdir)
