@@ -3,15 +3,18 @@
 
 """West command to reset target via PKOB (MCLR assert/release)."""
 
-import argparse
 import os
 import subprocess
-import sys
 import tempfile
-import time
 
+from pathlib import Path
 from textwrap import dedent
 from west.commands import WestCommand
+
+try:
+    import yaml
+except ImportError:
+    yaml = None
 
 
 class PkobReset(WestCommand):
@@ -31,47 +34,54 @@ class PkobReset(WestCommand):
             help=self.help,
             description=self.description)
         parser.add_argument(
-            '--tool', default='PKOB',
-            help='Programming probe (default: PKOB)')
-        parser.add_argument(
-            '--part', default='32MZ2048EFH144',
-            help='Target device (default: 32MZ2048EFH144)')
-        parser.add_argument(
-            '--ipecmd-path',
-            default='C:/Program Files (x86)/Microchip/MPLABX/v5.35/mplab_platform/mplab_ipe/ipecmd.exe',
-            help='Path to ipecmd executable')
+            '-b', '--board', required=True,
+            help='Board name (e.g. pic32mz_ef_sk)')
         return parser
 
-    def do_run(self, args, unknown_args):
-        exe = args.ipecmd_path
+    IPECMD_DEFAULT = ('C:/Program Files (x86)/Microchip/MPLABX/v5.35'
+                       '/mplab_platform/mplab_ipe/ipecmd.exe')
 
+    def _get_part_from_board(self, board_name):
+        """Resolve board name to ipecmd part number via board.yml."""
+        if yaml is None:
+            self.die('PyYAML is required: pip install pyyaml')
+
+        zephyr_base = Path(self.topdir) / 'zephyr'
+        boards_dir = zephyr_base / 'boards'
+
+        # Search for board.yml matching the board name
+        for yml_path in boards_dir.rglob('board.yml'):
+            with open(yml_path, 'r') as f:
+                data = yaml.safe_load(f)
+            if data and data.get('board', {}).get('name') == board_name:
+                socs = data['board'].get('socs', [])
+                if not socs:
+                    self.die(f'No SoC defined in {yml_path}')
+                soc_name = socs[0]['name']
+                if not soc_name.startswith('pic'):
+                    self.die(f'Board {board_name} SoC "{soc_name}" is not a PIC device')
+                # pic32mz2048efh144 -> 32MZ2048EFH144
+                return soc_name[3:].upper()
+
+        self.die(f'Board "{board_name}" not found')
+
+    def do_run(self, args, unknown_args):
+        exe = self.IPECMD_DEFAULT
         if not os.path.isfile(exe):
             self.die(f'ipecmd not found at: {exe}')
 
-        # Connect and release from reset (asserts then de-asserts MCLR)
-        cmd = [
-            exe,
-            f'-TP{args.tool}',
-            f'-P{args.part}',
-            '-OL',  # Release from reset
-            '-OK',  # Silent mode
-        ]
+        part = self._get_part_from_board(args.board)
 
-        self.inf(f'Resetting target via {args.tool}...')
+        cmd = [exe, '-TPPKOB', f'-P{part}', '-OL', '-OK']
+
+        self.inf(f'Resetting {args.board} (part: {part}) via PKOB...')
         try:
             with tempfile.TemporaryDirectory() as tmpdir:
                 result = subprocess.run(cmd, capture_output=True, text=True,
                                         timeout=60, cwd=tmpdir)
-                if result.returncode == 0:
-                    self.inf('Target reset complete.')
-                else:
-                    self.dbg('Simple reset failed, trying with connection test...')
-                    cmd_retry = cmd + ['-Y']
-                    result = subprocess.run(cmd_retry, capture_output=True, text=True,
-                                            timeout=60, cwd=tmpdir)
-                    if result.returncode == 0:
-                        self.inf('Target reset complete.')
-                    else:
-                        self.die(f'Reset failed (status {result.returncode}): {result.stdout}')
+                output = result.stdout + result.stderr
+                if result.returncode != 0 or 'Failed' in output:
+                    self.die(f'Reset failed: {output.strip()}')
+                self.inf('Target reset complete.')
         except subprocess.TimeoutExpired:
             self.die('Reset timed out (>60s)')
