@@ -107,3 +107,8 @@ west-commands:
       - name: pic32m-build
         class: Pic32mBuild
         help: build a Zephyr application for PIC32M using XC32 toolchain
+  - file: scripts/west_commands/pkob_reset.py
+    commands:
+      - name: pkob-reset
+        class: PkobReset
+        help: reset target board via PKOB MCLR

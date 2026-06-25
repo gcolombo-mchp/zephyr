@@ -78,7 +78,7 @@ class MPLABIPEBinaryRunner(ZephyrBinaryRunner):
 
     def flash(self):
         self.ensure_output('hex')
-        hex_file = self.cfg.hex_file
+        hex_file = os.path.abspath(self.cfg.hex_file)
 
         if self.ipecmd_path:
             exe = self.ipecmd_path

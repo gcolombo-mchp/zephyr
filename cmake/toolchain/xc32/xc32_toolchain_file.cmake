@@ -38,28 +38,12 @@ set(CMAKE_ASM_ABI_COMPILED YES)
 
 set(CMAKE_SYSROOT "${_xc32_root}/pic32m")
 
-# --- DFP path ---
-# Override with environment variable DFP_DIR, otherwise auto-detect latest.
-set(XC32_PROCESSOR "32MZ2048EFH144")
-
-if(DEFINED ENV{DFP_DIR})
-  file(TO_CMAKE_PATH "$ENV{DFP_DIR}" _dfp_path_normalized)
-else()
-  if(DEFINED ENV{USERPROFILE})
-    set(_home "$ENV{USERPROFILE}")
-  elseif(DEFINED ENV{HOME})
-    set(_home "$ENV{HOME}")
-  endif()
-  file(GLOB _dfp "${_home}/.mchp_packs/Microchip/PIC32MZ-EF_DFP/*")
-  list(SORT _dfp)
-  list(GET _dfp -1 _dfp_path)
-  file(TO_CMAKE_PATH "${_dfp_path}" _dfp_path_normalized)
-endif()
-
 # --- Compiler/linker flags ---
-set(_xc32_common_flags "-mprocessor=${XC32_PROCESSOR} -mdfp=${_dfp_path_normalized}")
-
-set(CMAKE_C_FLAGS "${_xc32_common_flags}" CACHE STRING "" FORCE)
-set(CMAKE_CXX_FLAGS "${_xc32_common_flags}" CACHE STRING "" FORCE)
-set(CMAKE_ASM_FLAGS "${_xc32_common_flags}" CACHE STRING "" FORCE)
-set(CMAKE_EXE_LINKER_FLAGS "${_xc32_common_flags} -Wa,-W -L\"${_xc32_root}/lib/gcc/pic32m/13.2.1/fpu64\"" CACHE STRING "" FORCE)
+# Device-specific flags (-mprocessor, -mdfp) are added later by the SoC
+# CMakeLists.txt via zephyr_compile_options(), because board.cmake (which
+# defines XC32_PROCESSOR) is not yet processed at toolchain file time.
+# Here we only set minimal flags needed for CMake configuration to succeed.
+set(CMAKE_C_FLAGS "" CACHE STRING "" FORCE)
+set(CMAKE_CXX_FLAGS "" CACHE STRING "" FORCE)
+set(CMAKE_ASM_FLAGS "" CACHE STRING "" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS "-Wa,-W" CACHE STRING "" FORCE)
