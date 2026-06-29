@@ -1,3 +1,9 @@
+/**********************************************************************************************
+ * © 2026 Microchip Technology Inc. and its subsidiares. All rights reserved.
+ * This software includes AI generated code created using significant prompting. This
+ * software is provided AS IS; you are Responsible for reviewing, testing, and validating for
+ * your application.
+ **********************************************************************************************/
 /dts-v1/;
 
 #include <microchip/pic32m/pic32mz_ef/pic32mz_efh/pic32mz2048efh144.dtsi>

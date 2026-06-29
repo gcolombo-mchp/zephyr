@@ -1,3 +1,9 @@
+/**********************************************************************************************
+ * © 2026 Microchip Technology Inc. and its subsidiares. All rights reserved.
+ * This software includes AI generated code created using significant prompting. This
+ * software is provided AS IS; you are Responsible for reviewing, testing, and validating for
+ * your application.
+ **********************************************************************************************/
 /*--------------------------------------------------------------------------
  * MPLAB XC Compiler -  PIC32MZ2048EFH144 linker script
  * Build date : Apr 12 2026
